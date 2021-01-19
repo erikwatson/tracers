@@ -160,14 +160,6 @@ More possible features:
 			ctx.clearRect(0, 0, double, double);
 		}
 
-		function storeMousePos(evt) {
-			var rect = realCanvas.getBoundingClientRect();
-			mousePos = [
-				evt.clientX - rect.left,
-				evt.clientY - rect.top
-			];
-		}
-
 		function changeStyle(inc) {
 			if ('undefined' === typeof inc) {
 				inc = true;
@@ -495,8 +487,6 @@ More possible features:
 		}
 
 		function step(evt) {
-			window.clearTimeout(timer);
-			timer = false;
 			if (evt) {
 				storeMousePos(evt);
 			}
@@ -519,7 +509,7 @@ More possible features:
 				xy[Y][n] = xy[Y][n - 1];
 			}
 
-			timer = window.setTimeout(step, DELAY);
+			window.requestAnimationFrame(step);
 		}
 
 		function doBackground() {
@@ -663,9 +653,6 @@ More possible features:
 		// resize the canvas to fill browser window dynamically
 		window.addEventListener('resize', resizeCanvas, false);
 
-		// draw the things
-		window.addEventListener('mousemove', step, false);
-
 		// change the line style
 		window.addEventListener('click', changeStyle, false);
 
@@ -676,6 +663,9 @@ More possible features:
 		resizeCanvas();
 		clear();
 		doBackground();
+
+		// start the update loop 
+		window.requestAnimationFrame(step);
 	})(window, document);
 </script>
 </body>
