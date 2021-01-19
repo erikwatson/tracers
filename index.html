@@ -305,9 +305,6 @@ More possible features:
 			var len = xy[X].length;
 			var half = Math.floor(len / 2);
 
-			ctx.moveTo(xy[X][1], xy[Y][1]);
-			ctx.lineTo(xy[X][0], xy[Y][0]);
-
 			var from = rotateAround(
 				{ x: xy[X][1], y: xy[Y][1] },
 				{ x: canvas.width / 2, y: canvas.height / 2 },
@@ -326,6 +323,43 @@ More possible features:
 			ctx.moveTo(from.x, from.y);
 			ctx.lineTo(to.x, to.y);
 			ctx.stroke();
+		}
+
+		function fatDot (angle) {
+			var len = xy[X].length;
+			var half = Math.floor(len / 2);
+
+			for (var i = len; i > 0; i -= 1) {
+				if ((i < len - 1) && (i > 1)) {
+					continue;
+				}
+
+				var from = rotateAround(
+					{ x: xy[X][i], y: xy[Y][i] },
+					{ x: canvas.width / 2, y: canvas.height / 2 },
+					angle
+				);
+
+				var to = rotateAround(
+					{ x: xy[X][i - 1], y: xy[Y][i - 1] },
+					{ x: canvas.width / 2, y: canvas.height / 2 },
+					angle
+				);
+
+				ctx.beginPath();
+				ctx.strokeStyle = color(0);
+				ctx.lineWidth = sizeMap(len);
+				ctx.moveTo(from.x, from.y);
+				ctx.lineTo(to.x, to.y);
+				ctx.stroke();
+
+				ctx.beginPath();
+				ctx.strokeStyle = color(len);
+				ctx.lineWidth = sizeMap(half);
+				ctx.moveTo(from.x, from.y);
+				ctx.lineTo(to.x, to.y);
+				ctx.stroke();
+			}
 		}
 
 		function draw() {
@@ -359,24 +393,8 @@ More possible features:
 					break;
 
 				case 5 : // two fat dots
-					for (var i = len; i > 0; i -= 1) {
-						if ((i < len - 1) && (i > 1)) {
-							continue;
-						}
-
-						ctx.beginPath();
-						ctx.strokeStyle = color(0);
-						ctx.lineWidth = sizeMap(len);
-						ctx.moveTo(xy[X][i], xy[Y][i]);
-						ctx.lineTo(xy[X][i - 1], xy[Y][i - 1]);
-						ctx.stroke();
-
-						ctx.beginPath();
-						ctx.strokeStyle = color(len);
-						ctx.lineWidth = sizeMap(half);
-						ctx.moveTo(xy[X][i], xy[Y][i]);
-						ctx.lineTo(xy[X][i - 1], xy[Y][i - 1]);
-						ctx.stroke();
+					for (var i = lines; i > 0; i--) {
+						fatDot((360 / lines) * i);
 					}
 					break;
 
