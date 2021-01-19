@@ -488,6 +488,31 @@ More possible features:
 			}
 		}
 
+		function randomDot (angle) {
+			var len = xy[X].length;
+			var half = Math.floor(len / 2);
+			var rnd = rand(1, len);
+
+			var from = rotateAround(
+				{ x: xy[X][1], y: xy[Y][1] },
+				{ x: canvas.width / 2, y: canvas.height / 2 },
+				angle
+			);
+
+			var to = rotateAround(
+				{ x: xy[X][0], y: xy[Y][0] },
+				{ x: canvas.width / 2, y: canvas.height / 2 },
+				angle
+			);
+
+			ctx.beginPath();
+			ctx.strokeStyle = color(half);
+			ctx.lineWidth = sizeMap(rnd);
+			ctx.moveTo(from.x, from.y);
+			ctx.lineTo(to.x, to.y);
+			ctx.stroke();
+		}
+
 		function draw() {
 			ctx.strokeStyle = 'rgba(0,0,0,0)';
 			ctx.lineCap = 'round';
@@ -537,13 +562,9 @@ More possible features:
 					break;
 
 				case 8 : // single random sized dot
-					var rnd = rand(1, len);
-					ctx.beginPath();
-					ctx.strokeStyle = color(half);
-					ctx.lineWidth = sizeMap(rnd);
-					ctx.moveTo(xy[X][1], xy[Y][1]);
-					ctx.lineTo(xy[X][0], xy[Y][0]);
-					ctx.stroke();
+					for (var i = lines; i > 0; i--) {
+						randomDot((360 / lines) * i);
+					}
 					break;
 			}
 		}
