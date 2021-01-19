@@ -186,6 +186,7 @@ More possible features:
 			return { x: rotatedX, y: rotatedY };
 		}
 
+		// draws one of the "tadpole" lines at an angle specified in degrees 
 		function tadpole (angle) {
 			var len = xy[X].length;
 			var half = Math.floor(len / 2);
@@ -228,6 +229,41 @@ More possible features:
 			}
 		}
 
+		// draws one of the "triangle" lines at an angle specified in degrees 
+		function triangle (angle) {
+			var len = xy[X].length;
+			var half = Math.floor(len / 2);
+
+			for (var i = len; i > 0; i -= 1) {
+				var from = rotateAround(
+					{ x: xy[X][i], y: xy[Y][i] },
+					{ x: canvas.width / 2, y: canvas.height / 2 },
+					angle
+				);
+
+				var to = rotateAround(
+					{ x: xy[X][i - 1], y: xy[Y][i - 1] },
+					{ x: canvas.width / 2, y: canvas.height / 2 },
+					angle
+				);
+
+				ctx.beginPath();
+				
+				// TODO: find a better way to calc this ?
+				if (i < half) {
+					ctx.strokeStyle = color(Math.abs(i - len));
+					ctx.lineWidth = sizeMap(i);
+				} else {
+					ctx.strokeStyle = color(i);
+					ctx.lineWidth = sizeMap(Math.abs(i - len));
+				}
+
+				ctx.moveTo(from.x, from.y);
+				ctx.lineTo(to.x, to.y);
+				ctx.stroke();
+			}
+		}
+
 		function draw() {
 			ctx.strokeStyle = 'rgba(0,0,0,0)';
 			ctx.lineCap = 'round';
@@ -241,20 +277,8 @@ More possible features:
 					break;
 
 				case 2 : // triangle line
-					for (var i = len; i > 0; i -= 1) {
-						ctx.beginPath();
-						// TODO: find a better way to calc this ?
-						if (i < half) {
-							ctx.strokeStyle = color(Math.abs(i - len));
-							ctx.lineWidth = sizeMap(i);
-						}
-						else {
-							ctx.strokeStyle = color(i);
-							ctx.lineWidth = sizeMap(Math.abs(i - len));
-						}
-						ctx.moveTo(xy[X][i], xy[Y][i]);
-						ctx.lineTo(xy[X][i - 1], xy[Y][i - 1]);
-						ctx.stroke();
+					for (var i = lines; i > 0; i--) {
+						triangle((360 / lines) * i);
 					}
 					break;
 
