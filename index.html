@@ -362,6 +362,74 @@ More possible features:
 			}
 		}
 
+		function swimmingTadpole (angle) {
+			var len = xy[X].length;
+			var half = Math.floor(len / 2);
+
+			var prevRnd = [rand(-len, len), rand(-len, len)];
+
+			for (var i = len; i > 0; i -= 1) {
+				var rnd = [rand(-len, len), rand(-len, len)];
+
+				ctx.beginPath();
+				ctx.strokeStyle = color(i);
+				ctx.lineWidth = sizeMap(len - i);
+
+				var from = { x: 0, y: 0 }
+				var to = { x: 0, y: 0 }
+
+				if (i > half) {
+					from = rotateAround(
+						{ x: xy[X][i] + prevRnd[X], y: xy[Y][i] + prevRnd[Y] },
+						{ x: canvas.width / 2, y: canvas.height / 2 },
+						angle
+					);
+
+					to = rotateAround(
+						{ x: xy[X][i - 1] + rnd[X], y: xy[Y][i - 1] + rnd[Y] },
+						{ x: canvas.width / 2, y: canvas.height / 2 },
+						angle
+					);
+
+					ctx.moveTo(from.x, from.y);
+					ctx.lineTo(to.x, to.y);
+				} else if (i === half) {
+					from = rotateAround(
+						{ x: xy[X][i] + prevRnd[X], y: xy[Y][i] + prevRnd[Y] },
+						{ x: canvas.width / 2, y: canvas.height / 2 },
+						angle
+					);
+
+					to = rotateAround(
+						{ x: xy[X][i - 1], y: xy[Y][i - 1] },
+						{ x: canvas.width / 2, y: canvas.height / 2 },
+						angle
+					);
+
+					ctx.moveTo(from.x, from.y);
+					ctx.lineTo(to.x, to.y);
+				} else {
+					from = rotateAround(
+						{ x: xy[X][i], y: xy[Y][i] },
+						{ x: canvas.width / 2, y: canvas.height / 2 },
+						angle
+					);
+
+					to = rotateAround(
+						{ x: xy[X][i - 1], y: xy[Y][i - 1] },
+						{ x: canvas.width / 2, y: canvas.height / 2 },
+						angle
+					);
+
+					ctx.moveTo(from.x, from.y);
+					ctx.lineTo(to.x, to.y);
+				}
+
+				ctx.stroke();
+				prevRnd = rnd;
+			}
+		}
+
 		function draw() {
 			ctx.strokeStyle = 'rgba(0,0,0,0)';
 			ctx.lineCap = 'round';
@@ -399,28 +467,8 @@ More possible features:
 					break;
 
 				case 6 : // swimming tadpole line
-					var prevRnd = [rand(-len, len), rand(-len, len)];
-					for (var i = len; i > 0; i -= 1) {
-						var rnd = [rand(-len, len), rand(-len, len)];
-
-						ctx.beginPath();
-						ctx.strokeStyle = color(i);
-						ctx.lineWidth = sizeMap(len - i);
-						if (i > half) {
-							ctx.moveTo(xy[X][i] + prevRnd[X], xy[Y][i] + prevRnd[Y]);
-							ctx.lineTo(xy[X][i - 1] + rnd[X], xy[Y][i - 1] + rnd[Y]);
-						}
-						else if (i === half) {
-							ctx.moveTo(xy[X][i] + prevRnd[X], xy[Y][i] + prevRnd[Y]);
-							ctx.lineTo(xy[X][i - 1], xy[Y][i - 1]);
-						}
-						else {
-							ctx.moveTo(xy[X][i], xy[Y][i]);
-							ctx.lineTo(xy[X][i - 1], xy[Y][i - 1]);
-						}
-						ctx.stroke();
-
-						prevRnd = rnd;
+					for (var i = lines; i > 0; i--) {
+						swimmingTadpole((360 / lines) * i);
 					}
 					break;
 
