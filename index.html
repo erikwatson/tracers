@@ -47,37 +47,19 @@ More possible features:
 		#canvas {
 			display: block;
 		}
-
-		.hidden {
-			display: none;
-		}
 	</style>
 </head>
 <body>
 <canvas id="canvas"></canvas>
-<canvas id="hidden" class="hidden"></canvas>
-<canvas id="hidden_mirror" class="hidden"></canvas>
-<canvas id="hidden_temp" class="hidden"></canvas>
-<canvas id="hidden_1" class="hidden"></canvas>
-<canvas id="hidden_2" class="hidden"></canvas>
-<canvas id="hidden_3" class="hidden"></canvas>
-<canvas id="hidden_4" class="hidden"></canvas>
-<canvas id="hidden_5" class="hidden"></canvas>
-<canvas id="hidden_6" class="hidden"></canvas>
-<canvas id="hidden_7" class="hidden"></canvas>
-<canvas id="hidden_8" class="hidden"></canvas>
 <script>
 	(function(window, document) {
 		// constants
 		const X = 0;
 		const Y = 1;
 		const RAD_STEP = 1 / 36 * Math.PI; // 5 degrees
-		const DELAY = 17; // use 17 ms for ~60fps (16.666667)
 
-		var canvas = document.getElementById('hidden'), // the workhorse canvas element
+		var canvas = document.getElementById('canvas'), // the workhorse canvas element
 			ctx = canvas.getContext('2d'), // the workhorse 2d canvas context
-			realCanvas = document.getElementById('canvas'), // the visible canvas element
-			realCtx = realCanvas.getContext('2d'), // the visible 2d canvas context
 			mousePos = [0,0], // the current mouse position
 			style = 1, // initial line style (1--8)
 			styleCount = 8, // the number of different styles (edit to fit actual style count)
@@ -89,8 +71,6 @@ More possible features:
 			band_strength = 10, // adjust for looser or tighter attachment (higher = looser, smaller = tighter) 10 = original
 			rad = 0, // current rotation value
 			center = [0,0], // the center point of the canvas
-			double = 0, // double the size of the canvas
-			centerDouble = 0, // the center of the doubled canvas (it's a square, both are the same)
 			doubleCorner = [], // the location on the double canvas where the TL corner of the original canvas hits when the centers are aligned
 			lines = 1, // current number of lines drawn
 			maxLines = 8, // max number of lines
@@ -101,8 +81,7 @@ More possible features:
 			hue = 0, // the current hue value
 			colorCycling = true, // cycle the line colors
 			hueStep = 5, // the line color cycling speed
-			dotSize = 20, // the current dot size for the largest dot
-			timer; // the timer to keep the drawing going if the mouse isn't moving
+			dotSize = 20; // the current dot size for the largest dot
 
 		function rand(min, max) {
 			return Math.floor(Math.random() * (max - min + 1) + min);
@@ -137,27 +116,18 @@ More possible features:
 		function resizeCanvas() {
 			var width = window.innerWidth;
 			var height = window.innerHeight;
+
 			center = [width / 2, height / 2];
 
-			double = Math.max(width, height) * 2;
-			centerDouble = double / 2;
+			canvas.width = width;
+			canvas.height = height;
 
-			doubleCorner = [
-				centerDouble - center[X],
-				centerDouble - center[Y]
-			];
-
-			realCanvas.width = width;
-			realCanvas.height = height;
-			canvas.width = double;
-			canvas.height = double;
-			console.log('Resized:', width, height, double, centerDouble, doubleCorner);
+			console.log('Resized:', width, height);
 		}
 
 		function clear() {
 			// clear the canvas
-			realCtx.clearRect(0, 0, realCanvas.width, realCanvas.height);
-			ctx.clearRect(0, 0, double, double);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		}
 
 		function changeStyle(inc) {
@@ -421,76 +391,7 @@ More possible features:
 			ctx.translate(-doubleCorner[X], -doubleCorner[Y]);
 		}
 
-		function duplicate() {
-			var mirrorCanvas, mirrorCtx;
-			var tempCanvas, tempCtx;
-			var dupCanvas, dupCtx;
-
-			// TODO: the original image needs to be rotated if the rotateMode is on
-			// because when it gets mirrored, if it's not rotated first, it will be wonky
-			// and then the every-other lines need to be rotated as well...
-			// but then mirrored properly... this might be tricky...
-
-			// mirror the image first, then add in rotations
-			if (mirrorMode) {
-				mirrorCanvas = document.getElementById('hidden_mirror');
-				mirrorCtx = mirrorCanvas.getContext('2d');
-
-				// same as `canvas`
-				mirrorCanvas.width = double;
-				mirrorCanvas.height = double;
-
-				// translate, THEN mirror, then translate back, THEN draw
-				mirrorCtx.translate(centerDouble, centerDouble);
-				mirrorCtx.scale(1, -1);
-				mirrorCtx.translate(-centerDouble, -centerDouble);
-
-				mirrorCtx.drawImage(canvas, 0, 0);
-
-				// put the new mirrored image on the main one
-				ctx.drawImage(mirrorCanvas, 0, 0);
-			}
-
-			// store a temp copy of the now-mirrored drawing
-			tempCanvas = document.getElementById('hidden_temp');
-			tempCtx = tempCanvas.getContext('2d');
-
-			// same as `canvas`
-			tempCanvas.width = double;
-			tempCanvas.height = double;
-
-			// copy the current drawing
-			tempCtx.drawImage(canvas, 0, 0);
-
-			for (var n = 1; n <= lines; n += 1) {
-				dupCanvas = false;
-				dupCanvas = document.getElementById('hidden_'+n);
-				dupCtx = dupCanvas.getContext('2d');
-
-				dupCanvas.width = double;
-				dupCanvas.height = double;
-
-				// rotate, THEN draw
-				dupCtx.translate(centerDouble, centerDouble);
-				dupCtx.rotate((2 * Math.PI) * n / lines);
-				dupCtx.translate(-centerDouble, -centerDouble);
-
-				// copy over the rotated copy of the temp canvas
-				dupCtx.drawImage(tempCanvas, 0, 0);
-
-				// put the new rotated image on the main one
-				ctx.drawImage(dupCanvas, 0, 0);
-			}
-
-			// copy the current drawing to the visible canvas
-			realCtx.drawImage(canvas, -doubleCorner[X], -doubleCorner[Y]);
-		}
-
-		function step(evt) {
-			if (evt) {
-				storeMousePos(evt);
-			}
-
+		function step() {
 			// set the current values
 			xmove = xmove + (mousePos[X] - /* parent.x - */ xy[X][0]) / band_strength;
 			ymove = ymove + (mousePos[Y] - /* parent.y - */ xy[Y][0]) / band_strength;
@@ -501,7 +402,6 @@ More possible features:
 			cycleColor();
 			rotateStep();
 			draw();
-			duplicate();
 
 			// increment the position values
 			for (var n = xy[X].length - 1; n > 0; n -= 1) {
@@ -514,6 +414,10 @@ More possible features:
 
 		function doBackground() {
 			document.getElementsByTagName('body')[0].style.backgroundColor = backgroundWhite ? '#ffffff' : '#000000';
+		}
+
+		function mouseMoved (e) {
+			mousePos = [e.offsetX, e.offsetY];
 		}
 
 		function changeSettings(evt) {
@@ -655,6 +559,9 @@ More possible features:
 
 		// change the line style
 		window.addEventListener('click', changeStyle, false);
+
+		// update the position of the mouse relative to the canvas 
+		canvas.addEventListener('mousemove', mouseMoved);
 
 		// change the other settings
 		window.addEventListener('keydown', changeSettings, false);
